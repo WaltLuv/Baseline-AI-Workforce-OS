@@ -1,21 +1,126 @@
-MIT License
+Baseline AI Workforce OS — Member License
+Version 1.0 · 2026
 
-Copyright (c) 2026 Walter Thornton
+Copyright (c) 2026 Walter Thornton (Baseline Automations). All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This is commercial software provided to members of Walter Thornton's community.
+It is source-available, not open source. Read this before using it.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+--------------------------------------------------------------------------------
+1. WHO THIS LICENSE IS FOR
+--------------------------------------------------------------------------------
+
+This license is granted to you personally, as the individual member who received
+this software through an authorised channel. "You" means that individual. If you
+received a copy from anyone other than Walter Thornton or an authorised
+distribution channel, you have no license to it — see section 5.
+
+--------------------------------------------------------------------------------
+2. WHAT YOU MAY DO
+--------------------------------------------------------------------------------
+
+Subject to section 3, you are granted a worldwide, non-exclusive,
+non-transferable, royalty-free license to:
+
+  a. Install, run and use the software on any machine you own or control,
+     without limit on the number of machines.
+
+  b. Modify it, adapt it, and build on top of it, for any purpose including
+     commercial purposes.
+
+  c. Use it commercially in your own business, and use its output — including
+     anything your agents write, generate or render — freely and without
+     restriction. The output of this software is yours.
+
+  d. Perform client work with it. You may install, configure, host, operate and
+     customise the software on machines you or your client control as part of a
+     service you provide, and you may charge whatever you like for that service.
+     Two conditions apply to client installations:
+
+       i.  the client receives no right to redistribute, resell, sublicense or
+           publish the software or its source, and
+       ii. you remain responsible for the client's compliance with this license.
+
+  e. Keep and continue using any version you received while your membership was
+     active, even after that membership ends. Ending your membership does not
+     revoke rights you already have to copies already in your possession — it
+     only ends your access to new versions.
+
+--------------------------------------------------------------------------------
+3. WHAT YOU MAY NOT DO
+--------------------------------------------------------------------------------
+
+You may not, without prior written permission from Walter Thornton:
+
+  a. Redistribute the software or its source code, in whole or in substantial
+     part, in any form — modified or unmodified. This includes sharing the zip,
+     forwarding files, posting to a public or private code host, uploading to a
+     marketplace, bundling it into another product, or handing it to anyone who
+     did not receive their own license through an authorised channel.
+
+  b. Resell, rent, lease, sublicense or otherwise commercialise the software
+     itself as a product. Selling services you perform with it (section 2d) is
+     expressly allowed; selling the software is not.
+
+  c. Publish, teach from, or distribute the source code as course material,
+     templates, or a starter kit of your own, whether paid or free.
+
+  d. Remove, obscure or alter any copyright notice, license text or attribution
+     contained in the software.
+
+  e. Use the software, or knowledge of its source, to produce a substantially
+     similar product for distribution to others.
+
+--------------------------------------------------------------------------------
+4. THIRD-PARTY COMPONENTS
+--------------------------------------------------------------------------------
+
+The software depends on open-source packages installed separately via npm. Those
+packages are governed by their own licenses, and nothing in this license changes
+your rights or obligations in respect of them. This license covers only the
+original source code in this repository.
+
+--------------------------------------------------------------------------------
+5. UNAUTHORISED COPIES
+--------------------------------------------------------------------------------
+
+If you obtained this software from anyone other than Walter Thornton or an
+authorised channel, no license is granted to you and you must delete your copy.
+Your use of it is not permitted, regardless of what the person who gave it to you
+told you.
+
+--------------------------------------------------------------------------------
+6. NO WARRANTY, NO LIABILITY
+--------------------------------------------------------------------------------
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE, ACCURACY AND NON-INFRINGEMENT.
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL THE COPYRIGHT HOLDER
+BE LIABLE FOR ANY CLAIM, DAMAGES, LOST DATA, LOST PROFITS, OR OTHER LIABILITY —
+INCLUDING COSTS INCURRED THROUGH ANY THIRD-PARTY SERVICE YOU CONNECT — WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM OR IN CONNECTION WITH THE
+SOFTWARE OR ITS USE.
+
+This software runs AI agents on your machine. They execute commands, create and
+change files, and can spend money through API keys you provide. Read DISCLAIMER.md
+before running it. You are responsible for what you run and what your agents do.
+
+--------------------------------------------------------------------------------
+7. TERMINATION
+--------------------------------------------------------------------------------
+
+This license terminates automatically if you breach section 3. On termination you
+must stop using the software and delete all copies, including client
+installations you are responsible for. Sections 4, 5, 6 and 8 survive.
+
+--------------------------------------------------------------------------------
+8. GENERAL
+--------------------------------------------------------------------------------
+
+This is the entire agreement between you and Walter Thornton concerning the
+software. If any provision is found unenforceable, the rest remains in force.
+Failure to enforce a provision is not a waiver of it.
+
+Questions, or want permission for something section 3 prohibits? Ask.

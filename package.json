@@ -29,5 +29,6 @@
     "tailwindcss": "^4",
     "typescript": "^5"
   },
-  "license": "MIT"
+  "license": "SEE LICENSE IN LICENSE",
+  "author": "Walter Thornton (Baseline Automations)"
 }

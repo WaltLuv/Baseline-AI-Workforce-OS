@@ -26,6 +26,10 @@ npm run dev
 Open **http://127.0.0.1:4400**. On a Mac you can run `./start.sh` instead — it
 installs on first run and opens the browser for you.
 
+> **First time?** Read [`DISCLAIMER.md`](DISCLAIMER.md) before connecting any
+> agent. This runs real programs on your machine and can spend real money through
+> keys you add.
+
 **It works immediately with nothing configured.** Goals, Journal, Kanban,
 Pipeline, Memory and the whole interface run on an empty machine. Every agent
 and integration you have not connected says exactly what is missing and the one
@@ -221,4 +225,27 @@ while a turn runs, so you can see what to fix.
 
 ---
 
-MIT licensed. Built by Walter Thornton · Baseline Automations.
+## License and safety
+
+This is **commercial, source-available software licensed to you personally** as a
+member — not open source.
+
+**You may:** use it on as many of your own machines as you like, modify it, use it
+commercially in your own business, and install and run it for your clients as
+part of a service you charge for. Anything your agents produce is yours.
+
+**You may not:** redistribute or share the source or the zip, resell the software
+itself, publish it, or teach from the source as your own starter kit. If you got
+this from someone other than Walter Thornton, you do not have a license to it.
+
+Full terms in [`LICENSE`](LICENSE). Want to do something the license prohibits?
+Ask — permission is often granted.
+
+**Before you run it, read [`DISCLAIMER.md`](DISCLAIMER.md).** This software runs
+AI agents on your machine: they execute commands, write files, and can spend real
+money through keys you connect. You use it at your own risk, and you are
+responsible for what your agents do.
+
+---
+
+© 2026 Walter Thornton · Baseline Automations. All rights reserved.

@@ -106,6 +106,19 @@ export const FEATURES: Feature[] = [
     requires: [],
   },
   {
+    id: "workforce",
+    route: "/workforce",
+    title: "Workforce",
+    icon: "Users",
+    group: "Orchestration",
+    accent: "#e0b184",
+    blurb:
+      "Agents you define rather than CLIs you connect — a spec, a contract and its tests, as plain files you can export and hand over.",
+    worksOffline: true,
+    requires: [CLAUDE_REQ],
+    tabs: ["Run", "Spec", "Contract", "Tests", "History"],
+  },
+  {
     id: "room",
     route: "/room",
     title: "Agent Mastermind",

@@ -79,13 +79,14 @@ Never a fake "online".
 ### The pages
 
 **Command** — Mission Control · Activity · Memory · Skills
-**Orchestration** — Agent Mastermind · Pipeline · Kanban · Agent Kanban · Paperclip · Loop
+**Orchestration** — Workforce · Agent Mastermind · Pipeline · Kanban · Agent Kanban · Paperclip · Loop
 **Studio** — App Lab · Game Studio · Open Design · Thumbnails · Video · Video Editor · OpenMontage · Music · Notebook
 **Growth** — SEO Office · Leads · Radar · Astros
 **Self** — Goals · Journal · Settings · Setup
 
 Some worth knowing about:
 
+- **Workforce** — agents *you* define, not CLIs you connect. Each is a spec, a prompt contract and a test sheet; run an input through one, watch which files it touched, keep the history with its cost, and export the whole team as a zip. One click installs a starter three-agent operations team: intake and triage, follow-up and coordination, and a daily operations brief.
 - **Goals** — checkbox tasks with voice capture, mirrored to your Obsidian vault as one markdown file per month.
 - **Journal** — one file per day. Talk or type; it lands in the vault as `YYYY-MM-DD.md`.
 - **Activity** — every Claude Code session on this machine, read from `~/.claude/projects`, with tokens and tool counts.
@@ -163,9 +164,17 @@ Models (`plan` never writes; `default` asks).
 ├── goals.json
 ├── journal/YYYY-MM-DD.json
 ├── chats/<agent>.json     # transcripts
-├── boards/<board>.json    # kanban, pipeline, studio history
-└── workspace/<project>/   # everything your agents build
+├── boards/<board>.json    # kanban, pipeline, studio + workforce run history
+└── workspace/
+    ├── workforce/         # the agents you define — specs, contracts, tests
+    └── <project>/         # everything your agents build
 ```
+
+The workforce is plain markdown on purpose: `agents/<slug>/AGENT.md`,
+`CONTRACT.md` and `tests/cases.md`, alongside `COMPANY.md`, `POLICY.md`,
+`knowledge/`, `state/`, `outbox/` and `runs/`. It zips, it diffs, it travels to
+another machine, and you can hand the whole system to a client as a folder
+rather than an export.
 
 Source data — `~/.claude`, `~/.openclaw`, your Obsidian vault — is **read only**.
 There are exactly two exceptions, both things you asked for: goals and journal

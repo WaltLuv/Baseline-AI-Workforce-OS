@@ -1,4 +1,4 @@
-import { AGENT_BY_ID } from "@/lib/agents";
+import { resolveAgentSpec } from "@/lib/agents.server";
 import { chatStream, makeStreamId, NDJSON_HEADERS, type ChatMsg } from "@/lib/chatStream";
 import { ensureProject } from "@/lib/workspace";
 
@@ -8,7 +8,7 @@ export const maxDuration = 3600;
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
-  const spec = AGENT_BY_ID[id];
+  const spec = resolveAgentSpec(id);
   if (!spec) return new Response("unknown agent", { status: 404 });
 
   const body = (await req.json().catch(() => ({}))) as {

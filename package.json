@@ -1,8 +1,8 @@
 {
-  "name": "baseline-ai-workforce-os",
+  "name": "baseline-ai-workforce",
   "version": "1.0.0",
   "private": true,
-  "description": "Baseline AI Workforce OS — a local-first mission control for Claude Code and your other AI agents.",
+  "description": "Baseline AI Workforce — a local-first mission control for Claude Code and the rest of your AI workforce.",
   "scripts": {
     "dev": "next dev -H 127.0.0.1 -p 4400",
     "build": "next build",
@@ -17,7 +17,10 @@
     "next": "16.2.6",
     "qrcode": "^1.5.4",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "react-force-graph-3d": "^1.29.1",
+    "three": "^0.185.1",
+    "three-spritetext": "^1.10.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -26,9 +29,8 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.185.1",
     "tailwindcss": "^4",
     "typescript": "^5"
-  },
-  "license": "SEE LICENSE IN LICENSE",
-  "author": "Walter Thornton (Baseline Automations)"
+  }
 }

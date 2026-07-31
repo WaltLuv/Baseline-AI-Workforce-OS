@@ -10,7 +10,9 @@ export type Requirement =
   | { kind: "cli"; bin: string; label: string; install: string }
   | { kind: "env"; key: string; label: string; install: string }
   | { kind: "agent"; id: string; label: string; install: string }
-  | { kind: "vault"; label: string; install: string };
+  | { kind: "vault"; label: string; install: string }
+  /** A local HTTP service that must answer before the page is live. */
+  | { kind: "http"; url: string; label: string; install: string };
 
 export interface Feature {
   id: string;
@@ -18,7 +20,7 @@ export interface Feature {
   title: string;
   /** lucide-react icon name, resolved client-side. */
   icon: string;
-  group: "Command" | "Orchestration" | "Studio" | "Growth" | "Self";
+  group: "Command" | "Orchestration" | "Studio" | "Growth" | "System" | "Self";
   accent: string;
   blurb: string;
   /** What the page does with nothing configured at all. */
@@ -69,7 +71,7 @@ export const FEATURES: Feature[] = [
     blurb: "A live graph of your notes and agent memory, plus full-text search across the vault.",
     worksOffline: true,
     requires: [{ kind: "vault", label: "Obsidian vault", install: "Set your vault path in Settings." }],
-    tabs: ["Graph", "Search", "Recent"],
+    tabs: ["Brain", "Graph", "Search", "Recent"],
   },
   {
     id: "skills",
@@ -81,7 +83,7 @@ export const FEATURES: Feature[] = [
     blurb: "The skills your agents can call, read straight from disk — user, project and plugin scopes.",
     worksOffline: true,
     requires: [CLAUDE_REQ],
-    tabs: ["Fleet", "MCP servers"],
+    tabs: ["Fleet", "ROI", "Library", "MCP servers"],
   },
   {
     id: "goals",
@@ -117,6 +119,150 @@ export const FEATURES: Feature[] = [
     worksOffline: true,
     requires: [CLAUDE_REQ],
     tabs: ["Run", "Spec", "Contract", "Tests", "History"],
+  },
+  {
+    id: "a2a",
+    route: "/a2a",
+    title: "A2A",
+    icon: "Network",
+    group: "Orchestration",
+    accent: "#a78bfa",
+    blurb:
+      "Agent2Agent protocol gateway — other agents discover this machine's skills via the agent card and hand it tasks over JSON-RPC. Task feed, telemetry and a live send console.",
+    worksOffline: false,
+    requires: [
+      {
+        kind: "http",
+        // "{a2a}" is resolved against the configured a2aBaseUrl on the server.
+        url: "{a2a}/.well-known/agent-card.json",
+        label: "A2A server",
+        install: "cd apps/a2a-server && uv sync && uv run python -m a2a_server",
+      },
+    ],
+    tabs: ["Tasks", "Send", "Agent card", "Telemetry", "SOP"],
+  },
+  {
+    id: "credentials",
+    route: "/credentials",
+    title: "Credentials",
+    icon: "KeyRound",
+    group: "System",
+    accent: "#e0b184",
+    blurb:
+      "API keys for the whole stack, resolved env → 1Password → local file. Masked previews only; raw values never reach the browser.",
+    worksOffline: true,
+    requires: [],
+    tabs: ["Providers", "1Password", "Environment"],
+  },
+  {
+    id: "integrations",
+    route: "/integrations",
+    title: "Integrations",
+    icon: "Plug",
+    group: "System",
+    accent: "#22d3ee",
+    blurb: "What's plugged into your stack — every external service with its live connection state and exact setup command.",
+    worksOffline: true,
+    requires: [],
+    tabs: ["Catalog", "Notion", "Pinecone", "Higgsfield"],
+  },
+  {
+    id: "missions",
+    route: "/missions",
+    title: "Missions",
+    icon: "Rocket",
+    group: "Orchestration",
+    accent: "#a78bfa",
+    blurb:
+      "One brief in, one deliverable out: the lead integrator picks Agency specialists, runs each on the best connected harness, and integrates the results — the whole workforce behind a single box.",
+    worksOffline: false,
+    requires: [CLAUDE_REQ],
+  },
+  {
+    id: "agency",
+    route: "/agency",
+    title: "Agency",
+    icon: "Drama",
+    group: "Orchestration",
+    accent: "#c084fc",
+    blurb:
+      "The complete AI agency — 230+ specialist personalities across every division, browsed from your local clone with honest installed-state and one-click dispatch through Claude Code.",
+    worksOffline: true,
+    requires: [CLAUDE_REQ],
+  },
+  {
+    id: "dream",
+    route: "/dream",
+    title: "Dream Review",
+    icon: "MoonStar",
+    group: "Command",
+    accent: "#f0abfc",
+    blurb:
+      "The overnight audit: your last 24 hours of AI activity, distilled into the four highest-impact prescriptions — evidence-backed, never invented.",
+    worksOffline: false,
+    requires: [CLAUDE_REQ],
+    tabs: ["Today", "History", "Run now", "Schedule"],
+  },
+  {
+    id: "understand",
+    route: "/understand",
+    title: "Understand",
+    icon: "Telescope",
+    group: "Orchestration",
+    accent: "#fda4af",
+    blurb:
+      "Turn any repo — URL or local path — into a structured knowledge brief: overview, architecture, entry points, what to read first.",
+    worksOffline: false,
+    requires: [CLAUDE_REQ],
+    tabs: ["New brief", "History"],
+  },
+  {
+    id: "prompts",
+    route: "/prompts",
+    title: "Prompts",
+    icon: "ScrollText",
+    group: "Studio",
+    accent: "#facc15",
+    blurb: "225 battle-tested prompts across 11 categories — search, copy, or save the whole library into your vault.",
+    worksOffline: true,
+    requires: [],
+  },
+  {
+    id: "automations",
+    route: "/automations",
+    title: "Automations",
+    icon: "AlarmClock",
+    group: "System",
+    accent: "#fda4af",
+    blurb:
+      "Every scheduled job on this machine — Claude tasks, launchd, crontab — plus the schedule files this app generated, honestly labeled until you install them.",
+    worksOffline: true,
+    requires: [],
+  },
+  {
+    id: "graphify",
+    route: "/graphify",
+    title: "Graphify",
+    icon: "Waypoints",
+    group: "System",
+    accent: "#a3e635",
+    blurb:
+      "The structural brain of this codebase: every file classified and wired by imports, so a question finds the exact files instead of a repo-wide scan.",
+    worksOffline: true,
+    requires: [],
+    tabs: ["Graph", "Query", "Health", "God nodes"],
+  },
+  {
+    id: "documents",
+    route: "/documents",
+    title: "Documents",
+    icon: "FileText",
+    group: "Studio",
+    accent: "#fbbf24",
+    blurb:
+      "A gallery over your Hermes documents drop — search, preview, open. The source folder is read-only; hiding a file never deletes it.",
+    worksOffline: true,
+    requires: [],
   },
   {
     id: "room",

@@ -6,6 +6,22 @@ import { AGENTS } from "@/lib/agents";
 import { useJson } from "@/lib/client";
 import { PageHeader, PageShell, Panel } from "@/components/ui";
 
+interface SubscriptionEntry {
+  id: string;
+  name: string;
+  provider?: string;
+  monthlyPriceUsd: number;
+  note?: string;
+}
+interface CustomAgentEntry {
+  id: string;
+  name: string;
+  bin: string;
+  argv?: string[];
+  streamMode?: "ndjson" | "text";
+  accent?: string;
+  tagline?: string;
+}
 interface ConfigShape {
   userName: string;
   vaultRoot: string | null;
@@ -16,6 +32,10 @@ interface ConfigShape {
   bins: Record<string, string>;
   goalCategories: string[];
   locationLabel: string;
+  a2aBaseUrl: string;
+  subscriptions: SubscriptionEntry[];
+  hourlyRateUsd: number;
+  customAgents: CustomAgentEntry[];
 }
 interface ConfigResponse {
   config: ConfigShape;
@@ -28,6 +48,8 @@ export default function SettingsPage() {
   const { data, refresh } = useJson<ConfigResponse>("/api/config");
   const [form, setForm] = useState<Partial<ConfigShape>>({});
   const [bins, setBins] = useState<Record<string, string>>({});
+  const [subs, setSubs] = useState<SubscriptionEntry[]>([]);
+  const [customs, setCustoms] = useState<CustomAgentEntry[]>([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,14 +65,24 @@ export default function SettingsPage() {
       permissionMode: data.config.permissionMode,
       locationLabel: data.config.locationLabel,
       goalCategories: data.config.goalCategories,
+      a2aBaseUrl: data.config.a2aBaseUrl,
+      hourlyRateUsd: data.config.hourlyRateUsd,
     });
     setBins(data.config.bins ?? {});
+    setSubs(data.config.subscriptions ?? []);
+    setCustoms(data.config.customAgents ?? []);
   }, [data]);
 
   async function save() {
     setSaving(true);
     setError(null);
-    const payload: Record<string, unknown> = { ...form, bins: Object.fromEntries(Object.entries(bins).filter(([, v]) => v)) };
+    const payload: Record<string, unknown> = {
+      ...form,
+      bins: Object.fromEntries(Object.entries(bins).filter(([, v]) => v)),
+      subscriptions: subs.filter((s) => s.name.trim()),
+      hourlyRateUsd: Number(form.hourlyRateUsd) > 0 ? Number(form.hourlyRateUsd) : 120,
+      customAgents: customs.filter((c) => c.id.trim() && c.bin.trim()),
+    };
     if (payload.vaultRoot === "") payload.vaultRoot = null;
     const res = await fetch("/api/config", {
       method: "POST",
@@ -162,8 +194,133 @@ export default function SettingsPage() {
               </p>
             </div>
             <p className="text-[11.5px] leading-relaxed text-[var(--fg-mute)]">
-              HTTP-backed agents (GLM, OmniRoute, Hy3, Sakana) read their keys from .env.local. Keys are never
+              HTTP-backed agents (GLM, OmniRoute, Hy3, Sakana) read their keys from apps/workforce/.env.local. Keys are never
               written into this config file.
+            </p>
+          </div>
+        </Panel>
+
+        <Panel
+          title="Subscriptions"
+          subtitle="Your own flat-fee AI plans — powers the spend ledger on the home page. A personal ledger, never a paywall."
+        >
+          <div className="space-y-2.5">
+            {subs.map((s, i) => (
+              <div key={s.id} className="flex items-center gap-2">
+                <input
+                  className="input flex-1 py-1.5 text-[12.5px]"
+                  placeholder="Claude Max 20x"
+                  value={s.name}
+                  onChange={(e) => setSubs((p) => p.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}
+                />
+                <input
+                  className="input w-40 py-1.5 text-[12.5px]"
+                  placeholder="Anthropic · OAuth"
+                  value={s.provider ?? ""}
+                  onChange={(e) => setSubs((p) => p.map((x, j) => (j === i ? { ...x, provider: e.target.value } : x)))}
+                />
+                <div className="relative">
+                  <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-[var(--fg-mute)]">$</span>
+                  <input
+                    className="input w-24 py-1.5 pl-6 text-[12.5px]"
+                    type="number"
+                    min={0}
+                    placeholder="200"
+                    value={s.monthlyPriceUsd || ""}
+                    onChange={(e) =>
+                      setSubs((p) => p.map((x, j) => (j === i ? { ...x, monthlyPriceUsd: Number(e.target.value) || 0 } : x)))
+                    }
+                  />
+                </div>
+                <button
+                  className="btn btn-ghost !px-2 !py-1 text-[11.5px]"
+                  onClick={() => setSubs((p) => p.filter((_, j) => j !== i))}
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+            <button
+              className="btn !px-2.5 text-[12px]"
+              onClick={() => setSubs((p) => [...p, { id: `sub-${Date.now().toString(36)}`, name: "", monthlyPriceUsd: 0 }])}
+            >
+              + Add subscription
+            </button>
+            <div className="flex items-center gap-3 pt-1">
+              <label htmlFor="f-rate" className="w-[130px] shrink-0 text-[12.5px] text-[var(--fg-dim)]">
+                Hourly rate ($)
+              </label>
+              <input
+                id="f-rate"
+                type="number"
+                min={1}
+                className="input w-28 py-1.5 text-[12.5px]"
+                value={form.hourlyRateUsd ?? ""}
+                onChange={(e) => setForm((f) => ({ ...f, hourlyRateUsd: Number(e.target.value) }))}
+              />
+              <span className="text-[11.5px] text-[var(--fg-mute)]">used wherever time saved becomes dollars</span>
+            </div>
+            <div className="flex items-center gap-3 pt-1">
+              <label htmlFor="f-a2a" className="w-[130px] shrink-0 text-[12.5px] text-[var(--fg-dim)]">
+                A2A server URL
+              </label>
+              <input
+                id="f-a2a"
+                className="input flex-1 py-1.5 text-[12.5px]"
+                placeholder="http://127.0.0.1:8484"
+                value={form.a2aBaseUrl ?? ""}
+                onChange={(e) => setForm((f) => ({ ...f, a2aBaseUrl: e.target.value }))}
+              />
+            </div>
+          </div>
+        </Panel>
+
+        <Panel
+          title="Custom CLIs (CLI-Anything)"
+          subtitle="Any CLI on this machine becomes a chat agent — it gets a page, status probe and history like the built-ins."
+        >
+          <div className="space-y-2.5">
+            {customs.map((c, i) => (
+              <div key={i} className="flex flex-wrap items-center gap-2">
+                <input
+                  className="input w-28 py-1.5 text-[12.5px]"
+                  placeholder="id (slug)"
+                  value={c.id}
+                  onChange={(e) =>
+                    setCustoms((p) => p.map((x, j) => (j === i ? { ...x, id: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") } : x)))
+                  }
+                />
+                <input
+                  className="input w-36 py-1.5 text-[12.5px]"
+                  placeholder="Display name"
+                  value={c.name}
+                  onChange={(e) => setCustoms((p) => p.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}
+                />
+                <input
+                  className="input w-32 py-1.5 text-[12.5px] mono"
+                  placeholder="binary"
+                  value={c.bin}
+                  onChange={(e) => setCustoms((p) => p.map((x, j) => (j === i ? { ...x, bin: e.target.value } : x)))}
+                />
+                <input
+                  className="input min-w-0 flex-1 py-1.5 text-[12.5px] mono"
+                  placeholder='args, e.g. run {prompt}'
+                  value={(c.argv ?? []).join(" ")}
+                  onChange={(e) =>
+                    setCustoms((p) => p.map((x, j) => (j === i ? { ...x, argv: e.target.value.split(/\s+/).filter(Boolean) } : x)))
+                  }
+                />
+                <button className="btn btn-ghost !px-2 !py-1 text-[11.5px]" onClick={() => setCustoms((p) => p.filter((_, j) => j !== i))}>
+                  Remove
+                </button>
+              </div>
+            ))}
+            <button className="btn !px-2.5 text-[12px]" onClick={() => setCustoms((p) => [...p, { id: "", name: "", bin: "", argv: ["{prompt}"] }])}>
+              + Add custom CLI
+            </button>
+            <p className="text-[11.5px] leading-relaxed text-[var(--fg-mute)]">
+              <span className="mono">{"{prompt}"}</span> in the args is replaced with your message (appended when absent). Output
+              streams as plain text. Custom ids can&apos;t shadow built-in agents.
             </p>
           </div>
         </Panel>

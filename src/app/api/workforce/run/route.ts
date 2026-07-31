@@ -1,4 +1,4 @@
-import { AGENT_BY_ID } from "@/lib/agents";
+import { resolveAgentSpec } from "@/lib/agents.server";
 import { chatStream, makeStreamId, NDJSON_HEADERS } from "@/lib/chatStream";
 import { buildRunPrompt, getAgent, recordRun, workforceRoot, WORKFORCE_PROJECT } from "@/lib/workforce";
 import { listFiles } from "@/lib/workspace";
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
   if (!agent) return new Response("unknown agent", { status: 404 });
 
   // Any file-capable engine can drive a workforce agent; Claude Code is default.
-  const spec = AGENT_BY_ID[body.engine ?? "claude"];
+  const spec = resolveAgentSpec(body.engine ?? "claude");
   if (!spec) return new Response("unknown engine", { status: 404 });
 
   const cwd = await workforceRoot();

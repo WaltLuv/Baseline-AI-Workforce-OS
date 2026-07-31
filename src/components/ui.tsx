@@ -5,6 +5,18 @@ import * as Icons from "lucide-react";
 import type { ReactNode } from "react";
 import type { RequirementStatus } from "@/lib/features";
 
+/**
+ * A translucent version of any accent colour.
+ *
+ * Appending hex alpha (`${accent}44`) only works when the accent is a literal
+ * hex. Half the accents in this app are CSS variables, and `var(--gold)44` is
+ * invalid CSS — the browser throws the whole declaration away, which is how the
+ * token chart ended up drawing nothing at all. color-mix handles both.
+ */
+export function alpha(color: string, percent: number) {
+  return `color-mix(in oklab, ${color} ${percent}%, transparent)`;
+}
+
 /** Resolve a lucide icon by name, with a safe fallback. */
 export function Icon({ name, size = 16, className = "" }: { name: string; size?: number; className?: string }) {
   const map = Icons as unknown as Record<string, React.ComponentType<{ size?: number; className?: string }>>;
@@ -46,7 +58,7 @@ export function PageHeader({
         {icon && (
           <span
             className="mt-0.5 grid h-11 w-11 shrink-0 place-items-center rounded-xl border"
-            style={{ borderColor: `${accent}44`, background: `${accent}18`, color: accent }}
+            style={{ borderColor: alpha(accent, 27), background: alpha(accent, 9), color: accent }}
           >
             <Icon name={icon} size={20} />
           </span>
@@ -237,10 +249,17 @@ export function Sparkbars({
           key={`${d.label}-${i}`}
           title={`${d.label}: ${d.value.toLocaleString()}`}
           initial={{ height: "0%" }}
-          animate={{ height: `${Math.max(4, (d.value / max) * 100)}%` }}
+          animate={{ height: `${(d.value / max) * 100}%` }}
           transition={{ delay: i * 0.02, duration: 0.4, ease: "easeOut" }}
           className="flex-1 rounded-t-[3px]"
-          style={{ background: `linear-gradient(180deg, ${accent}, ${accent}44)`, minWidth: 4 }}
+          style={{
+            background: `linear-gradient(180deg, ${accent}, ${alpha(accent, 27)})`,
+            minWidth: 4,
+            // Heights stay linear so the bars never overstate a day. The floor
+            // only guarantees that a day with work on it does not vanish next to
+            // a day ten times its size.
+            minHeight: d.value > 0 ? 3 : 0,
+          }}
         />
       ))}
     </div>

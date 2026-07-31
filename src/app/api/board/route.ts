@@ -29,6 +29,8 @@ const ALLOWED = new Set([
   "opendesign",
   "notebook",
   "room",
+  "understand",
+  "leads-pipeline",
 ]);
 
 function boardFile(name: string): string | null {

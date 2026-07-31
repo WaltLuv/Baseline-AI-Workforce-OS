@@ -43,6 +43,44 @@ export interface WorkforceConfig {
   goalCategories: string[];
   /** Label shown in the top bar. */
   locationLabel: string;
+  /** Base URL of the local A2A server (apps/a2a-server). */
+  a2aBaseUrl: string;
+  /**
+   * Your own AI subscriptions, for the spend ledger on the home page. Prices
+   * cannot be auto-detected, so you enter them once; everything else on the
+   * dashboard is computed. This is a personal ledger — nothing in this app is
+   * ever gated on it.
+   */
+  subscriptions: SubscriptionEntry[];
+  /** Hourly rate used wherever time saved is turned into dollars. */
+  hourlyRateUsd: number;
+  /**
+   * CLI-Anything: your own CLIs as chat agents, defined in config rather than
+   * source. Each one gets the full agent treatment — status probe, chat page,
+   * history — via the same bridge as the built-in roster.
+   */
+  customAgents: CustomAgentEntry[];
+}
+
+export interface CustomAgentEntry {
+  /** Lowercase slug, must not collide with a built-in agent id. */
+  id: string;
+  name: string;
+  bin: string;
+  /** Argument template; "{prompt}" is replaced (appended when absent). */
+  argv?: string[];
+  streamMode?: "ndjson" | "text";
+  accent?: string;
+  tagline?: string;
+}
+
+export interface SubscriptionEntry {
+  id: string;
+  name: string;
+  /** e.g. "Anthropic · OAuth", "OpenAI · ChatGPT subscription". */
+  provider?: string;
+  monthlyPriceUsd: number;
+  note?: string;
 }
 
 const DEFAULTS: WorkforceConfig = {
@@ -55,6 +93,10 @@ const DEFAULTS: WorkforceConfig = {
   bins: {},
   goalCategories: ["Business", "Build", "Health", "Learning", "Personal"],
   locationLabel: "Local",
+  a2aBaseUrl: "http://127.0.0.1:8484",
+  subscriptions: [],
+  hourlyRateUsd: 120,
+  customAgents: [],
 };
 
 function loadFile(): Partial<WorkforceConfig> {
@@ -98,6 +140,13 @@ export function loadConfig(): WorkforceConfig {
       ? file.goalCategories
       : DEFAULTS.goalCategories,
     locationLabel: process.env.WORKFORCE_LOCATION ?? file.locationLabel ?? DEFAULTS.locationLabel,
+    a2aBaseUrl: process.env.WORKFORCE_A2A_URL ?? file.a2aBaseUrl ?? DEFAULTS.a2aBaseUrl,
+    subscriptions: Array.isArray(file.subscriptions) ? file.subscriptions : DEFAULTS.subscriptions,
+    hourlyRateUsd:
+      typeof file.hourlyRateUsd === "number" && file.hourlyRateUsd > 0 ? file.hourlyRateUsd : DEFAULTS.hourlyRateUsd,
+    customAgents: Array.isArray(file.customAgents)
+      ? file.customAgents.filter((a) => a && typeof a.id === "string" && /^[a-z][a-z0-9-]{1,30}$/.test(a.id) && typeof a.bin === "string")
+      : DEFAULTS.customAgents,
   };
 }
 

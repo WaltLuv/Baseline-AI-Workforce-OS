@@ -7,6 +7,7 @@ import { AGENTS, type AgentStatus } from "@/lib/agents";
 import { FEATURES } from "@/lib/features";
 import { useJson } from "@/lib/client";
 import AgentAvatar from "@/components/AgentAvatar";
+import PulsePanel from "@/components/PulsePanel";
 import { Icon, PageShell, Panel, Sparkbars, Stat, compact, relTime } from "@/components/ui";
 
 interface Vitals {
@@ -24,7 +25,7 @@ interface Vitals {
   agents: { connected: number; total: number; statuses: AgentStatus[] };
   work: {
     sessionsToday: number;
-    recent: { id: string; project: string; firstPrompt: string; updatedAt: number; messages: number; toolCalls: number }[];
+    recent: { id: string; key: string; project: string; firstPrompt: string; updatedAt: number; messages: number; toolCalls: number }[];
     usage: {
       totalSessions: number;
       totalMessages: number;
@@ -115,6 +116,8 @@ export default function MissionControl() {
           accent="var(--emerald)"
         />
       </div>
+
+      <PulsePanel />
 
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Workforce roster */}
@@ -251,7 +254,7 @@ export default function MissionControl() {
             {data?.work.recent.length ? (
               <ul className="divide-y divide-[var(--line)]">
                 {data.work.recent.map((s) => (
-                  <li key={s.id} className="flex items-start gap-3 px-5 py-3">
+                  <li key={s.key} className="flex items-start gap-3 px-5 py-3">
                     <span className="mt-1 grid h-6 w-6 shrink-0 place-items-center rounded-md border border-[var(--line)] text-[var(--fg-mute)]">
                       <Icon name="MessageSquare" size={12} />
                     </span>

@@ -17,6 +17,10 @@ const EDITABLE = new Set([
   "argv",
   "goalCategories",
   "locationLabel",
+  "a2aBaseUrl",
+  "subscriptions",
+  "hourlyRateUsd",
+  "customAgents",
 ]);
 
 export async function GET() {

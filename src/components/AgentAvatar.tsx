@@ -52,6 +52,12 @@ const GLYPHS: Record<AgentId, (s: number) => React.ReactNode> = {
       <path d="M7.5 10 10 12.5 7.5 15M12.5 15.5h4" />
     </svg>
   ),
+  ohmypi: (s) => (
+    <svg width={s * 0.58} height={s * 0.58} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.9" strokeLinecap="round">
+      {/* π */}
+      <path d="M4 7.5h16M8 7.5V18M16 7.5V16c0 1.4.8 2 2 2" />
+    </svg>
+  ),
   freeclaude: (s) => (
     <svg width={s * 0.56} height={s * 0.56} viewBox="0 0 24 24" fill="none">
       <path d="M12 2.5 13.5 9 20 10.5 13.5 12 12 18.5 10.5 12 4 10.5 10.5 9Z" fill="white" opacity="0.95" />
@@ -103,6 +109,13 @@ const GLYPHS: Record<AgentId, (s: number) => React.ReactNode> = {
     <svg width={s * 0.58} height={s * 0.58} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.7">
       <circle cx="9" cy="12" r="5" opacity="0.9" />
       <circle cx="15" cy="12" r="5" opacity="0.9" />
+    </svg>
+  ),
+  higgsfield: (s) => (
+    <svg width={s * 0.58} height={s * 0.58} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      {/* clapperboard + spark */}
+      <rect x="3.5" y="8" width="17" height="11" rx="2" />
+      <path d="M3.5 11.5h17M7.5 8l2.5 3.5M12 8l2.5 3.5M16.5 8 19 11.5M12 3.5l.9 1.8 1.9.4-1.9.5-.9 1.8-.9-1.8-1.9-.5 1.9-.4Z" />
     </svg>
   ),
   sakana: (s) => (

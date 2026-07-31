@@ -1,8 +1,12 @@
 import { INTEGRATIONS, type Integration, type IntegrationStatus } from "./integrations";
 import { which } from "./config";
+import { ensureProviderEnv } from "./credentials.server";
 
 /** Which env key (if any) is switching this integration on. */
 export function activeKey(integration: Integration): string | null {
+  // A key stored on the Credentials page (local file or 1Password) counts too —
+  // it is exported into this process's env so downstream libs read it as usual.
+  if (integration.providerId) ensureProviderEnv(integration.providerId);
   for (const key of integration.envKeys) {
     if (process.env[key]) return key;
   }

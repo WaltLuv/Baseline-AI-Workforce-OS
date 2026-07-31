@@ -27,7 +27,7 @@ function pickKey(spec: AgentSpec): string | null {
 export function resolveEndpoint(spec: AgentSpec, model?: string): Endpoint {
   const apiKey = pickKey(spec);
   if (!apiKey) {
-    throw new Error(`${spec.name} needs ${(spec.envKeys ?? []).join(" or ")} in .env.local`);
+    throw new Error(`${spec.name} needs ${(spec.envKeys ?? []).join(" or ")} in apps/workforce/.env.local`);
   }
   switch (spec.id) {
     case "glm":

@@ -52,7 +52,7 @@ export default function ActivityPage() {
           {data?.sessions.length ? (
             <ul className="divide-y divide-[var(--line)]">
               {data.sessions.map((s) => (
-                <li key={s.id} className="px-5 py-3.5">
+                <li key={s.key} className="px-5 py-3.5">
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[13.5px] text-[var(--fg-soft)]">{s.firstPrompt || "(no prompt captured)"}</p>

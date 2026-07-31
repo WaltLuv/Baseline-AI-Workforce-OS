@@ -15,7 +15,11 @@ export const CLAUDE_HOME = process.env.CLAUDE_CONFIG_DIR ?? path.join(os.homedir
 const PROJECTS_DIR = path.join(CLAUDE_HOME, "projects");
 
 export interface SessionSummary {
+  /** The Claude session id. NOT unique on its own — one session that ran in two
+   *  working directories writes one file per project, all sharing this id. */
   id: string;
+  /** Unique per transcript file. Use this as a list key, never `id`. */
+  key: string;
   project: string;
   projectPath: string;
   file: string;
@@ -111,6 +115,7 @@ async function summariseSession(projectDir: string, projectSlug: string, fileNam
   const projectPath = decodeProjectSlug(projectSlug);
   const summary: SessionSummary = {
     id: fileName.replace(/\.jsonl$/, ""),
+    key: `${projectSlug}/${fileName}`,
     project: path.basename(projectPath) || projectSlug,
     projectPath,
     file,

@@ -6,7 +6,17 @@
  * be honest instead of vague.
  */
 
-export type IntegrationId = "heygen" | "suno" | "images" | "apollo" | "notebooklm" | "realtime";
+export type IntegrationId =
+  | "heygen"
+  | "suno"
+  | "images"
+  | "apollo"
+  | "notebooklm"
+  | "realtime"
+  | "pinecone"
+  | "notion"
+  | "higgsfield"
+  | "openrouter";
 
 export interface Integration {
   id: IntegrationId;
@@ -15,6 +25,8 @@ export interface Integration {
   envKeys: string[];
   /** A CLI that must exist instead of (or as well as) a key. */
   cli?: string;
+  /** Credentials-page provider whose stored/1Password key also unlocks it. */
+  providerId?: string;
   adds: string;
   withoutIt: string;
   install: string;
@@ -76,6 +88,46 @@ export const INTEGRATIONS: Integration[] = [
     withoutIt: "Push-to-talk voice using the browser's own recognition and speech synthesis, routed through any connected agent.",
     install: "OPENAI_API_KEY=…\n# optional: REALTIME_MODEL=gpt-realtime",
     docsUrl: "https://developers.openai.com/api/docs/guides/realtime-webrtc",
+  },
+  {
+    id: "pinecone",
+    label: "Pinecone — vector memory",
+    envKeys: ["PINECONE_API_KEY"],
+    providerId: "pinecone",
+    adds: "Lists your vector indexes with live vector counts and merges them into the memory brain as first-class nodes.",
+    withoutIt: "The note graph and full-text search over your vault work entirely locally.",
+    install: "PINECONE_API_KEY=…   # app.pinecone.io → API Keys (or add it on the Credentials page)",
+    docsUrl: "https://docs.pinecone.io",
+  },
+  {
+    id: "notion",
+    label: "Notion — workspace pages",
+    envKeys: ["NOTION_TOKEN", "NOTION_API_KEY"],
+    providerId: "notion",
+    adds: "Searches your Notion workspace and pulls pages into the memory brain alongside vault notes.",
+    withoutIt: "Everything on this machine — vault, sessions, skills — is still indexed.",
+    install: "NOTION_TOKEN=…   # notion.so/profile/integrations → new internal integration",
+    docsUrl: "https://developers.notion.com",
+  },
+  {
+    id: "higgsfield",
+    label: "Higgsfield — creative provider",
+    envKeys: ["HIGGSFIELD_API_KEY"],
+    providerId: "higgsfield",
+    adds: "Account, model list and transaction history from the Higgsfield creative platform, in a provider control panel.",
+    withoutIt: "The rest of the studios render through their own providers or produce local artefacts.",
+    install: "HIGGSFIELD_API_KEY=…   # or add it on the Credentials page",
+    docsUrl: "https://higgsfield.ai",
+  },
+  {
+    id: "openrouter",
+    label: "OpenRouter — pay-as-you-go models",
+    envKeys: ["OPENROUTER_API_KEY"],
+    providerId: "openrouter",
+    adds: "Live credit balance and usage from the key endpoint, plus the OmniRoute agent for per-message model picking.",
+    withoutIt: "Subscription-backed agents (Claude Code, Codex) work as before.",
+    install: "OPENROUTER_API_KEY=…   # openrouter.ai/keys",
+    docsUrl: "https://openrouter.ai/docs",
   },
 ];
 

@@ -1,12 +1,20 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import dynamic from "next/dynamic";
 import { Search, X } from "lucide-react";
 import { useJson } from "@/lib/client";
 import type { MemoryGraph as Graph, Note, NoteHit } from "@/lib/memory";
+import type { BrainGraph, BrainNode } from "@/lib/brain.server";
 import MemoryGraph from "@/components/MemoryGraph";
 import VoiceButton from "@/components/VoiceButton";
-import { EmptyState, PageHeader, PageShell, Panel, Stat, Tabs, relTime } from "@/components/ui";
+import { EmptyState, PageHeader, PageShell, Panel, Stat, StatusPill, Tabs, relTime } from "@/components/ui";
+
+// three + the WebGL force graph load only when the Brain tab is opened.
+const Brain3D = dynamic(() => import("@/components/Brain3D"), {
+  ssr: false,
+  loading: () => <div className="skeleton m-5 h-[520px]" />,
+});
 
 interface GraphResponse {
   graph: Graph;
@@ -28,12 +36,14 @@ interface NoteResponse {
 }
 
 export default function MemoryPage() {
-  const [tab, setTab] = useState("Graph");
+  const [tab, setTab] = useState("Brain");
   const [query, setQuery] = useState("");
   const [submitted, setSubmitted] = useState("");
   const [open, setOpen] = useState<{ root: string; path: string } | null>(null);
 
   const { data: graphData, loading: graphLoading } = useJson<GraphResponse>(tab === "Graph" ? "/api/memory?view=graph" : null);
+  const { data: brain, loading: brainLoading } = useJson<BrainGraph>(tab === "Brain" ? "/api/memory/brain" : null);
+  const [picked, setPicked] = useState<BrainNode | null>(null);
   const { data: recent } = useJson<RecentResponse>("/api/memory?view=recent");
   const { data: results } = useJson<SearchResponse>(
     submitted ? `/api/memory?view=search&q=${encodeURIComponent(submitted)}` : null,
@@ -70,7 +80,69 @@ export default function MemoryPage() {
         />
       </div>
 
-      <Tabs tabs={["Graph", "Search", "Recent"]} active={tab} onChange={setTab} />
+      <Tabs tabs={["Brain", "Graph", "Search", "Recent"]} active={tab} onChange={setTab} />
+
+      {tab === "Brain" && (
+        <div className="space-y-4">
+          <Panel
+            title="3D Brain"
+            subtitle="Notes · decisions · sessions · skills · vector stores · Notion — one graph. Amber = stale, red = linked-but-missing."
+            padded={false}
+          >
+            {brainLoading && <div className="skeleton m-5 h-[520px]" />}
+            {!brainLoading && brain && brain.nodes.length > 1 ? (
+              <div className="p-2">
+                <Brain3D graph={brain} onSelect={setPicked} />
+              </div>
+            ) : (
+              !brainLoading && (
+                <EmptyState
+                  icon="Brain"
+                  title="Nothing to visualise yet"
+                  body="The brain builds from your vault, journal, Claude sessions and skills — do any of those and it lights up."
+                />
+              )
+            )}
+          </Panel>
+          {brain && (
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Panel title="Sources" padded={false}>
+                <ul className="divide-y divide-[var(--line)]">
+                  {brain.sources.map((s) => (
+                    <li key={s.id} className="flex items-center justify-between gap-3 px-5 py-2.5">
+                      <span className="text-[12.5px] text-[var(--fg-soft)]">{s.label}</span>
+                      <span className="flex items-center gap-2">
+                        <span className="text-[11px] text-[var(--fg-mute)]">{s.detail}</span>
+                        <StatusPill
+                          ready={s.state === "ok"}
+                          label={s.state === "ok" ? "Live" : s.state === "empty" ? "Empty" : s.state === "error" ? "Error" : "Setup needed"}
+                        />
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </Panel>
+              <Panel title={picked ? picked.label : "Signals"}>
+                {picked ? (
+                  <dl className="space-y-2 text-[12.5px]">
+                    <div className="flex justify-between"><dt className="text-[var(--fg-mute)]">Kind</dt><dd>{picked.kind}</dd></div>
+                    <div className="flex justify-between"><dt className="text-[var(--fg-mute)]">Status</dt><dd>{picked.status}</dd></div>
+                    {picked.detail && <div className="flex justify-between gap-4"><dt className="text-[var(--fg-mute)]">Detail</dt><dd className="mono min-w-0 truncate text-right">{picked.detail}</dd></div>}
+                    {picked.mtime > 0 && <div className="flex justify-between"><dt className="text-[var(--fg-mute)]">Touched</dt><dd>{relTime(picked.mtime)}</dd></div>}
+                  </dl>
+                ) : (
+                  <p className="text-[12.5px] leading-relaxed text-[var(--fg-mute)]">
+                    {brain.stats.notes} notes · {brain.stats.sessions} sessions · {brain.stats.skills} skills ·{" "}
+                    {brain.stats.vectorStores} vector stores · {brain.stats.notionPages} Notion pages ·{" "}
+                    <span className="text-[#f5b14c]">{brain.stats.stale} stale</span> ·{" "}
+                    <span className="text-[#ef5a5a]">{brain.stats.missing} missing</span>. Click a node for detail.
+                  </p>
+                )}
+              </Panel>
+            </div>
+          )}
+        </div>
+      )}
 
       {tab === "Graph" && (
         <Panel title="Note graph" subtitle="Wikilinks solid, folder grouping faint" padded={false}>

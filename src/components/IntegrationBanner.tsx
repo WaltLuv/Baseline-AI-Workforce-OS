@@ -48,7 +48,7 @@ export default function IntegrationBanner({ id }: { id: string }) {
         <span className="text-[var(--fg-soft)]">Without it:</span> {integration.withoutIt}
       </p>
       <pre className="mono mt-3 overflow-x-auto whitespace-pre-wrap rounded-lg border border-[var(--line)] bg-[rgba(13,10,18,0.6)] p-3 text-[var(--fg-dim)]">
-        {`# .env.local\n${integration.install}`}
+        {`# apps/workforce/.env.local\n${integration.install}`}
       </pre>
       <p className="mt-2 text-[11.5px] text-[var(--fg-mute)]">
         Restart the dev server after adding a key ·{" "}

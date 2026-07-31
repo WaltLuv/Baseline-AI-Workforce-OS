@@ -142,6 +142,50 @@ function handleCodexEvent(evt: Record<string, unknown>, emit: Emit) {
   }
 }
 
+/**
+ * Oh My Pi `--mode json` events. The shape is not formally documented, so this
+ * parser is deliberately tolerant: recognisable text becomes deltas, tool-ish
+ * events become tool lines, and anything unrecognised passes through verbatim —
+ * the chat can degrade but never goes blank.
+ */
+function handleOmpEvent(evt: Record<string, unknown>, emit: Emit) {
+  const type = String(evt.type ?? evt.event ?? "").toLowerCase();
+
+  if (type.includes("tool")) {
+    const name = String(evt.name ?? evt.tool ?? "tool");
+    emit({ t: "tool", name, detail: ompText(evt).slice(0, 200) });
+    return;
+  }
+  const usage = (evt.usage ?? (("tokens" in evt) ? evt : null)) as Record<string, unknown> | null;
+  if (usage && (usage.input_tokens ?? usage.inputTokens ?? usage.output_tokens ?? usage.outputTokens) !== undefined) {
+    emit({
+      t: "usage",
+      input: Number(usage.input_tokens ?? usage.inputTokens ?? 0),
+      output: Number(usage.output_tokens ?? usage.outputTokens ?? 0),
+      costUsd: Number(usage.cost_usd ?? usage.costUsd ?? 0),
+    });
+    return;
+  }
+  const text = ompText(evt);
+  if (text) emit({ t: "delta", text });
+  else emit({ t: "delta", text: `${JSON.stringify(evt)}\n` });
+}
+
+function ompText(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) return value.map(ompText).join("");
+  if (value && typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    for (const key of ["text", "content", "message", "delta", "output"]) {
+      if (key in obj) {
+        const got = ompText(obj[key]);
+        if (got) return got;
+      }
+    }
+  }
+  return "";
+}
+
 export interface ChatRequest {
   spec: AgentSpec;
   prompt: string;
@@ -239,6 +283,7 @@ export function chatStream(req: ChatRequest): ReadableStream<Uint8Array> {
         }
         if (spec.streamMode === "claude-stream-json") handleClaudeEvent(parsed, emit);
         else if (spec.streamMode === "codex-json") handleCodexEvent(parsed, emit);
+        else if (spec.streamMode === "omp-json") handleOmpEvent(parsed, emit);
         else {
           const text = parsed.text ?? parsed.message ?? parsed.content;
           if (typeof text === "string") emit({ t: "delta", text });

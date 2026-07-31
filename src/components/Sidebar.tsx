@@ -5,17 +5,18 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import { Search, X, Menu, Command } from "lucide-react";
-import { AGENTS, type AgentStatus } from "@/lib/agents";
+import { AGENTS, type AgentSpec, type AgentStatus } from "@/lib/agents";
 import { FEATURES } from "@/lib/features";
 import { useJson } from "@/lib/client";
 import AgentAvatar from "./AgentAvatar";
 import { Icon } from "./ui";
 
 interface AgentsResponse {
+  agents: AgentSpec[];
   statuses: AgentStatus[];
 }
 
-const FEATURE_GROUPS = ["Command", "Orchestration", "Studio", "Growth", "Self"] as const;
+const FEATURE_GROUPS = ["Command", "Orchestration", "Studio", "Growth", "System", "Self"] as const;
 
 function NavRow({
   href,
@@ -65,7 +66,8 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   }, [data]);
 
   const q = query.trim().toLowerCase();
-  const agents = AGENTS.filter((a) => !q || a.name.toLowerCase().includes(q) || a.tagline.toLowerCase().includes(q));
+  const roster = data?.agents ?? AGENTS; // includes config-defined custom CLIs
+  const agents = roster.filter((a) => !q || a.name.toLowerCase().includes(q) || a.tagline.toLowerCase().includes(q));
   const features = FEATURES.filter((f) => !q || f.title.toLowerCase().includes(q) || f.blurb.toLowerCase().includes(q));
   const connected = (data?.statuses ?? []).filter((s) => s.connected).length;
 
@@ -136,7 +138,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             <div className="nav-section flex items-center justify-between">
               <span>Agents</span>
               <span className="text-[9px] font-semibold tracking-normal text-[var(--fg-mute)]">
-                {connected}/{AGENTS.length} live
+                {connected}/{roster.length} live
               </span>
             </div>
             {agents.map((a) => {

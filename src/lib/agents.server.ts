@@ -33,6 +33,7 @@ const ARGV_DEFAULTS: Record<AgentId, string[]> = {
   kimi: ["-p", "{prompt}"],
   grok: ["-p", "{prompt}"],
   opencode: ["run", "{prompt}"],
+  ohmypi: ["-p", "--mode", "json", "--no-session", "--max-time", "45", "--auto-approve", "{prompt}"],
   ruflo: ["swarm", "{prompt}"],
   local: ["run", "{model}", "{prompt}"],
   glm: [],
@@ -41,10 +42,46 @@ const ARGV_DEFAULTS: Record<AgentId, string[]> = {
   hy3: [],
   fusion: [],
   sakana: [],
+  higgsfield: [],
 };
 
 /** Agents whose prompt goes over stdin (no OS argument-length ceiling). */
 const STDIN_AGENTS = new Set<AgentId>(["claude", "freeclaude"]);
+
+/**
+ * CLI-Anything: config-defined agents synthesized into full AgentSpecs. The
+ * typed registry stays intact — custom ids ride the same machinery through a
+ * documented cast, and a custom id can never shadow a built-in one.
+ */
+export function customAgentSpecs(): AgentSpec[] {
+  return loadConfig()
+    .customAgents.filter((c) => !(c.id in AGENT_BY_ID))
+    .map((c) => ({
+      id: c.id as AgentId,
+      name: c.name || c.id,
+      tagline: c.tagline ?? `Custom CLI · ${c.bin}`,
+      blurb: `Your own \`${c.bin}\` CLI, bridged as a chat agent. Defined in Settings — no source edit involved.`,
+      accent: c.accent ?? "#9d93a6",
+      gradient: `linear-gradient(135deg, ${c.accent ?? "#9d93a6"}, #4b445a)`,
+      group: "Local" as const,
+      backend: "cli" as const,
+      bins: [c.bin],
+      streamMode: c.streamMode ?? "text",
+      carriesHistory: true,
+      install: `Make sure \`${c.bin}\` is on PATH (or set an override in Settings).`,
+      capabilities: ["Chat", "Config-defined"],
+      buildsFiles: false,
+    }));
+}
+
+/** Look up built-in AND custom agents — every server route resolves ids through this. */
+export function resolveAgentSpec(id: string): AgentSpec | undefined {
+  return AGENT_BY_ID[id] ?? customAgentSpecs().find((a) => a.id === id);
+}
+
+function customArgv(id: string): string[] | undefined {
+  return loadConfig().customAgents.find((c) => c.id === id)?.argv;
+}
 
 /** Locate an agent's binary. Returns null when it is not installed. */
 export function resolveBin(spec: AgentSpec): string | null {
@@ -107,6 +144,28 @@ export async function agentStatus(spec: AgentSpec, opts: { probeVersion?: boolea
     };
   }
 
+  // Free Claude Code is the claude binary pointed at a local proxy — the
+  // binary existing proves nothing if fcc-server isn't running. Probe it, or
+  // every downstream consumer (roster, missions) believes a dead agent is live.
+  if (spec.id === "freeclaude") {
+    const base = process.env.FCC_BASE_URL ?? "http://127.0.0.1:8082";
+    const up = await fccProxyUp(base);
+    const bin = resolveBin(spec);
+    const connected = Boolean(bin) && up;
+    return {
+      id: spec.id,
+      connected,
+      state: connected ? "ready" : "setup-needed",
+      bin,
+      version: null,
+      detail: !bin
+        ? "`claude` was not found on this machine"
+        : up
+          ? `${bin} via ${base}`
+          : `fcc-server is not answering at ${base} — start it first`,
+    };
+  }
+
   const bin = resolveBin(spec);
   if (!bin) {
     return {
@@ -137,11 +196,30 @@ export async function agentStatus(spec: AgentSpec, opts: { probeVersion?: boolea
 
 async function quickReady(spec: AgentSpec): Promise<boolean> {
   if (spec.backend === "http") return Boolean(envKeyPresent(spec));
+  if (spec.id === "freeclaude") {
+    return Boolean(resolveBin(spec)) && (await fccProxyUp(process.env.FCC_BASE_URL ?? "http://127.0.0.1:8082"));
+  }
   return Boolean(resolveBin(spec));
 }
 
+/** Short-cached reachability probe for the fcc-server proxy. */
+let fccCache: { at: number; base: string; up: boolean } | null = null;
+async function fccProxyUp(base: string): Promise<boolean> {
+  if (fccCache && fccCache.base === base && Date.now() - fccCache.at < 10_000) return fccCache.up;
+  let up = false;
+  try {
+    const res = await fetch(base, { signal: AbortSignal.timeout(1200), cache: "no-store" });
+    up = res.status > 0;
+  } catch {
+    up = false;
+  }
+  fccCache = { at: Date.now(), base, up };
+  return up;
+}
+
 export async function allStatuses(probeVersion = false): Promise<AgentStatus[]> {
-  return Promise.all(Object.values(AGENT_BY_ID).map((a) => agentStatus(a, { probeVersion })));
+  const all = [...Object.values(AGENT_BY_ID), ...customAgentSpecs()];
+  return Promise.all(all.map((a) => agentStatus(a, { probeVersion })));
 }
 
 /**
@@ -171,7 +249,10 @@ export function buildCommand(
   if (!bin) throw new Error(`${spec.name} is not installed. ${spec.install}`);
 
   const template =
-    (cfg as unknown as { argv?: Record<string, string[]> }).argv?.[spec.id] ?? ARGV_DEFAULTS[spec.id] ?? ["{prompt}"];
+    (cfg as unknown as { argv?: Record<string, string[]> }).argv?.[spec.id] ??
+    ARGV_DEFAULTS[spec.id] ??
+    customArgv(spec.id) ??
+    ["{prompt}"];
   const model = opts.model ?? (spec.id === "claude" ? cfg.claudeModel : spec.id === "local" ? "llama3.2" : "");
 
   const usesStdin = STDIN_AGENTS.has(spec.id);

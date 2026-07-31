@@ -15,6 +15,7 @@ export type AgentId =
   | "kimi"
   | "grok"
   | "opencode"
+  | "ohmypi"
   | "freeclaude"
   | "ruflo"
   | "local"
@@ -23,12 +24,14 @@ export type AgentId =
   | "omniroute"
   | "hy3"
   | "fusion"
-  | "sakana";
+  | "sakana"
+  | "higgsfield";
 
 /** How the agent's stdout should be interpreted. */
 export type StreamMode =
   | "claude-stream-json" // Claude Code CLI `--output-format=stream-json`
   | "codex-json" // `codex exec --json`
+  | "omp-json" // Oh My Pi `omp -p --mode json`
   | "ndjson" // generic newline-delimited JSON with a text-ish field
   | "text"; // raw text, forwarded verbatim
 
@@ -43,7 +46,7 @@ export interface AgentSpec {
   blurb: string;
   accent: string;
   gradient: string;
-  group: "Core" | "Coding" | "Local" | "Routing";
+  group: "Core" | "Coding" | "Local" | "Routing" | "Creative";
   backend: Backend;
   /** Binary names tried in order when detecting a CLI agent. */
   bins: string[];
@@ -200,6 +203,35 @@ export const AGENTS: AgentSpec[] = [
     buildsFiles: true,
   },
   {
+    id: "ohmypi",
+    name: "Oh My Pi",
+    tagline: "The omp coding harness — lead integrator of the workforce.",
+    blurb:
+      "Bridges the `omp` CLI in print-JSON mode: 40+ providers behind one harness, with its skills, agent files and state read live from ~/.omp. Oh My Pi is the omp coding CLI — not the PI Agent memory persona; they are separate things.",
+    accent: "#a78bfa",
+    gradient: "linear-gradient(135deg,#c4b5fd,#6d28d9)",
+    group: "Coding",
+    backend: "cli",
+    bins: ["omp"],
+    binGuesses: [".local/bin/omp", ".bun/bin/omp", ".npm-global/bin/omp"],
+    streamMode: "omp-json",
+    carriesHistory: true,
+    envKeys: [
+      "OPENROUTER_API_KEY",
+      "OPENAI_API_KEY",
+      "ANTHROPIC_API_KEY",
+      "GOOGLE_API_KEY",
+      "GROQ_API_KEY",
+      "MISTRAL_API_KEY",
+      "XAI_API_KEY",
+      "CEREBRAS_API_KEY",
+    ],
+    install: "curl -fsSL https://omp.sh/install | sh   # or: bun install -g @oh-my-pi/pi-coding-agent",
+    docsUrl: "https://omp.sh",
+    capabilities: ["Streaming chat", "Workspace builds", "Harness state from ~/.omp", "A2A lead-integrator skill"],
+    buildsFiles: true,
+  },
+  {
     id: "freeclaude",
     name: "Free Claude Code",
     tagline: "The Claude Code CLI, pointed at your own model proxy.",
@@ -262,7 +294,7 @@ export const AGENTS: AgentSpec[] = [
     envKeys: ["GLM_API_KEY", "ZHIPU_API_KEY"],
     streamMode: "text",
     carriesHistory: true,
-    install: "Add GLM_API_KEY=… to .env.local (base URL defaults to https://api.z.ai/api/paas/v4).",
+    install: "Add GLM_API_KEY=… to apps/workforce/.env.local (base URL defaults to https://api.z.ai/api/paas/v4).",
     capabilities: ["Streaming chat"],
     buildsFiles: false,
   },
@@ -280,7 +312,7 @@ export const AGENTS: AgentSpec[] = [
     envKeys: ["GLM_API_KEY", "ZHIPU_API_KEY"],
     streamMode: "text",
     carriesHistory: true,
-    install: "Add GLM_API_KEY=… to .env.local.",
+    install: "Add GLM_API_KEY=… to apps/workforce/.env.local.",
     capabilities: ["Build chat", "File extraction", "Live preview"],
     buildsFiles: true,
   },
@@ -297,7 +329,7 @@ export const AGENTS: AgentSpec[] = [
     envKeys: ["OPENROUTER_API_KEY"],
     streamMode: "text",
     carriesHistory: true,
-    install: "Add OPENROUTER_API_KEY=… to .env.local.",
+    install: "Add OPENROUTER_API_KEY=… to apps/workforce/.env.local.",
     capabilities: ["Streaming chat", "Model picker", "Cost visibility"],
     buildsFiles: false,
   },
@@ -314,7 +346,7 @@ export const AGENTS: AgentSpec[] = [
     envKeys: ["HY3_API_KEY"],
     streamMode: "text",
     carriesHistory: true,
-    install: "Add HY3_API_KEY=… and HY3_BASE_URL=… to .env.local.",
+    install: "Add HY3_API_KEY=… and HY3_BASE_URL=… to apps/workforce/.env.local.",
     capabilities: ["Build chat", "File extraction"],
     buildsFiles: true,
   },
@@ -348,8 +380,28 @@ export const AGENTS: AgentSpec[] = [
     envKeys: ["SAKANA_API_KEY"],
     streamMode: "text",
     carriesHistory: true,
-    install: "Add SAKANA_API_KEY=… to .env.local.",
+    install: "Add SAKANA_API_KEY=… to apps/workforce/.env.local.",
     capabilities: ["Research chat"],
+    buildsFiles: false,
+  },
+  {
+    id: "higgsfield",
+    name: "Higgsfield",
+    tagline: "Video & image generation provider — driven through Claude Code + the Higgsfield MCP.",
+    blurb:
+      "The creative provider: images, video, audio via the Higgsfield platform. The Studio tab dispatches generation briefs through Claude Code using the registered Higgsfield MCP server — the same Provider Control Center pattern as Baseline Agent OS.",
+    accent: "#f97316",
+    gradient: "linear-gradient(135deg,#fdba74,#c2410c)",
+    group: "Creative",
+    backend: "http",
+    bins: [],
+    envKeys: ["HIGGSFIELD_API_KEY", "HIGGSFIELD_API_KEY_ID", "HIGGSFIELD_API_KEY_SECRET"],
+    streamMode: "text",
+    carriesHistory: false,
+    install:
+      "claude mcp add --transport http higgsfield https://mcp.higgsfield.ai/mcp\n# then authenticate: run /mcp inside claude and complete the OAuth device flow\n# optional API keys: HIGGSFIELD_API_KEY_ID=… HIGGSFIELD_API_KEY_SECRET=… (or the Credentials page)",
+    docsUrl: "https://higgsfield.ai",
+    capabilities: ["Video generation", "Image generation", "MCP-driven studio", "Account status"],
     buildsFiles: false,
   },
 ];

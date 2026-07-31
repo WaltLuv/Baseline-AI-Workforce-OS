@@ -1,7 +1,7 @@
 "use client";
 
 import BuildStudio from "@/components/BuildStudio";
-import LeadsEnrich from "@/components/LeadsEnrich";
+import LeadsPipeline from "@/components/LeadsPipeline";
 
 export default function LeadsPage() {
   return (
@@ -47,9 +47,9 @@ Rules: no flattery openers, no "hope this finds you well", no fake personalisati
 
 Then reply with the variant you would send first.`;
       }}
-      note="Everything here works with lists you already have. The Enrich tab fills in the gaps from Apollo."
+      note="Everything here works with lists you already have. The Pipeline tab adds Apollo enrichment, Hunter domain search, and free CSV import with transparent scoring."
       primaryLabel="Strategy"
-      secondary={{ label: "Enrich", node: <LeadsEnrich /> }}
+      secondary={{ label: "Pipeline", node: <LeadsPipeline /> }}
     />
   );
 }

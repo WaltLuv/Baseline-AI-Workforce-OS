@@ -51,6 +51,7 @@ export async function GET() {
       sessionsToday: sessions.filter((s) => s.updatedAt > dayAgo).length,
       recent: sessions.slice(0, 6).map((s) => ({
         id: s.id,
+        key: s.key,
         project: s.project,
         firstPrompt: s.firstPrompt,
         updatedAt: s.updatedAt,

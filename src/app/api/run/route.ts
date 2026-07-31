@@ -1,4 +1,4 @@
-import { AGENT_BY_ID } from "@/lib/agents";
+import { resolveAgentSpec } from "@/lib/agents.server";
 import { chatStream, makeStreamId, NDJSON_HEADERS, type ChatMsg } from "@/lib/chatStream";
 import { ensureProject, extractFiles, listFiles } from "@/lib/workspace";
 
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     extract?: boolean;
   };
 
-  const spec = AGENT_BY_ID[body.agent ?? "claude"];
+  const spec = resolveAgentSpec(body.agent ?? "claude");
   if (!spec) return new Response("unknown agent", { status: 404 });
 
   const prompt = typeof body.prompt === "string" ? body.prompt.trim() : "";

@@ -5,16 +5,20 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { motion } from "framer-motion";
 import { FolderOpen, RefreshCw, Terminal } from "lucide-react";
-import { AGENT_BY_ID, type AgentStatus } from "@/lib/agents";
+import { AGENT_BY_ID, type AgentSpec, type AgentStatus } from "@/lib/agents";
 import { useJson } from "@/lib/client";
 import AgentAvatar from "@/components/AgentAvatar";
 import ChatView from "@/components/ChatView";
 import HermesPantheon from "@/components/HermesPantheon";
+import OmpPanels from "@/components/OmpPanels";
+import HiggsfieldPanels from "@/components/HiggsfieldPanels";
+import MissionRunner from "@/components/MissionRunner";
 import PhonePanel from "@/components/PhonePanel";
 import VoiceLive from "@/components/VoiceLive";
 import { EmptyState, Panel, StatusPill, Tabs, relTime } from "@/components/ui";
 
 interface AgentsResponse {
+  agents: AgentSpec[];
   statuses: AgentStatus[];
 }
 interface WorkspaceResponse {
@@ -25,6 +29,7 @@ interface WorkspaceResponse {
 
 const SUGGESTIONS: Record<string, string[]> = {
   claude: ["What did I work on last?", "Audit this repo for dead code", "Write a plan for today's build"],
+  ohmypi: ["Reply with exactly: OMP_OK", "List the tools you have available", "Refactor the file I paste next"],
   codex: ["Review the diff on my current branch", "Write tests for the last file I edited"],
   openclaw: ["Show me the swarm status", "Spin up a research task"],
   hermes: ["Which persona should handle outreach?", "Summarise what you remember about me"],
@@ -34,27 +39,39 @@ const SUGGESTIONS: Record<string, string[]> = {
 
 export default function AgentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const spec = AGENT_BY_ID[id];
-  if (!spec) notFound();
-
   const [tab, setTab] = useState("Chat");
   const { data, refresh } = useJson<AgentsResponse>("/api/agents?probe=1", { pollMs: 60_000 });
-  const project = `${spec.id}-workspace`;
+
+  // Custom (config-defined) agents aren't in the compiled registry — they
+  // arrive with the /api/agents payload.
+  const spec = AGENT_BY_ID[id] ?? data?.agents.find((a) => a.id === id);
+  const project = `${id}-workspace`;
   const { data: ws, refresh: refreshWs } = useJson<WorkspaceResponse>(
-    tab === "Workspace" ? `/api/workspace?project=${project}` : null,
+    // Raw `tab` here on purpose: activeTab is derived below the spec guard,
+    // and "Workspace" exists in every tab set.
+    tab === "Workspace" && spec ? `/api/workspace?project=${project}` : null,
   );
+  const status = useMemo(() => data?.statuses.find((s) => s.id === id) ?? null, [data, id]);
 
-  const status = useMemo(() => data?.statuses.find((s) => s.id === spec.id) ?? null, [data, spec.id]);
+  if (!AGENT_BY_ID[id] && data && !spec) notFound();
+  if (!spec) {
+    return <div className="p-8 text-[13px] text-[var(--fg-mute)]">Looking up agent…</div>;
+  }
 
-  // Hermes carries surfaces the other agents do not have: the persona pantheon
-  // it loads from disk, and the phone bridge for driving it away from the desk.
-  const tabs = useMemo(
-    () =>
-      spec.id === "hermes"
-        ? ["Chat", "Voice", "Pantheon", "Phone", "Workspace", "About"]
-        : ["Chat", "Voice", "Workspace", "About"],
-    [spec.id],
-  );
+  // Some agents carry surfaces the others do not: Hermes has its persona
+  // pantheon and phone bridge; Oh My Pi exposes the harness state it keeps
+  // under ~/.omp. Plain computation — it must live below the spec guard, so
+  // it can't be a hook.
+  const tabs =
+    spec.id === "hermes"
+      ? ["Chat", "Voice", "Pantheon", "Phone", "Workspace", "About"]
+      : spec.id === "ohmypi"
+        ? ["Orchestrate", "Chat", "Voice", "Skills", "Harness", "Status", "Workspace", "About"]
+        : spec.id === "higgsfield"
+          ? ["Studio", "Provider", "MCP", "Workspace", "About"]
+          : ["Chat", "Voice", "Workspace", "About"];
+  // Agents without a Chat tab (Higgsfield) land on their first tab instead.
+  const activeTab = tabs.includes(tab) ? tab : tabs[0];
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -82,18 +99,18 @@ export default function AgentPage({ params }: { params: Promise<{ id: string }> 
           </div>
 
           <div className="mt-3">
-            <Tabs tabs={tabs} active={tab} onChange={setTab} />
+            <Tabs tabs={tabs} active={activeTab} onChange={setTab} />
           </div>
         </div>
       </header>
 
-      {tab === "Chat" && (
+      {activeTab === "Chat" && (
         <div className="relative flex min-h-0 flex-1 flex-col px-4 md:px-8">
           <ChatView spec={spec} status={status} suggestions={SUGGESTIONS[spec.id] ?? []} />
         </div>
       )}
 
-      {tab === "Voice" && (
+      {activeTab === "Voice" && (
         <div className="scroll min-h-0 flex-1 overflow-y-auto px-5 py-6 md:px-8">
           <div className="mx-auto w-full max-w-4xl">
             <VoiceLive agentId={spec.id} agentName={spec.name} />
@@ -101,7 +118,7 @@ export default function AgentPage({ params }: { params: Promise<{ id: string }> 
         </div>
       )}
 
-      {tab === "Pantheon" && (
+      {activeTab === "Pantheon" && (
         <div className="scroll min-h-0 flex-1 overflow-y-auto px-5 py-6 md:px-8">
           <div className="mx-auto w-full max-w-4xl">
             <HermesPantheon />
@@ -109,7 +126,7 @@ export default function AgentPage({ params }: { params: Promise<{ id: string }> 
         </div>
       )}
 
-      {tab === "Phone" && (
+      {activeTab === "Phone" && (
         <div className="scroll min-h-0 flex-1 overflow-y-auto px-5 py-6 md:px-8">
           <div className="mx-auto w-full max-w-4xl">
             <PhonePanel />
@@ -117,7 +134,31 @@ export default function AgentPage({ params }: { params: Promise<{ id: string }> 
         </div>
       )}
 
-      {tab === "Workspace" && (
+      {activeTab === "Orchestrate" && spec.id === "ohmypi" && (
+        <div className="scroll min-h-0 flex-1 overflow-y-auto px-5 py-6 md:px-8">
+          <div className="mx-auto w-full max-w-5xl">
+            <MissionRunner />
+          </div>
+        </div>
+      )}
+
+      {(activeTab === "Studio" || activeTab === "Provider" || activeTab === "MCP") && spec.id === "higgsfield" && (
+        <div className="scroll min-h-0 flex-1 overflow-y-auto px-5 py-6 md:px-8">
+          <div className="mx-auto w-full max-w-5xl">
+            <HiggsfieldPanels view={activeTab as "Studio" | "Provider" | "MCP"} />
+          </div>
+        </div>
+      )}
+
+      {(activeTab === "Skills" || activeTab === "Harness" || activeTab === "Status") && spec.id === "ohmypi" && (
+        <div className="scroll min-h-0 flex-1 overflow-y-auto px-5 py-6 md:px-8">
+          <div className="mx-auto w-full max-w-4xl">
+            <OmpPanels view={activeTab as "Skills" | "Harness" | "Status"} />
+          </div>
+        </div>
+      )}
+
+      {activeTab === "Workspace" && (
         <div className="scroll min-h-0 flex-1 overflow-y-auto px-5 py-6 md:px-8">
           <div className="mx-auto w-full max-w-4xl space-y-4">
             <Panel
@@ -161,7 +202,7 @@ export default function AgentPage({ params }: { params: Promise<{ id: string }> 
         </div>
       )}
 
-      {tab === "About" && (
+      {activeTab === "About" && (
         <div className="scroll min-h-0 flex-1 overflow-y-auto px-5 py-6 md:px-8">
           <motion.div
             initial={{ opacity: 0, y: 8 }}

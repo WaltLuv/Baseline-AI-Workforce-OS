@@ -11,6 +11,27 @@ already have, and sends nothing anywhere.
 
 ---
 
+## What's new in V2
+
+- **Missions** — one box orchestrates everything: describe a goal, the lead
+  integrator (Oh My Pi when installed) picks specialists from The Agency,
+  runs each on the best connected harness, and integrates one deliverable.
+- **The Agency** — 223 specialist agent personalities across 18 divisions
+  (`/agency`), browsed live from a local clone of
+  [agency-agents-v2](https://github.com/WaltLuv/agency-agents-v2).
+- **A2A protocol server** (`a2a-server/`) — expose this machine's coding CLIs
+  to any Agent2Agent-speaking peer. Python + the official a2a-sdk;
+  `cd a2a-server && uv sync && uv run python -m a2a_server`.
+- **Oh My Pi** joins the roster with Skills / Harness / Status tabs read from
+  `~/.omp`; **Higgsfield** joins as the creative video agent (MCP-driven).
+- **3D Brain** on Memory, **Graphify** codebase map, **Dream Review** daily
+  audit, **Credentials + 1Password** secrets layer, **Prompt Library** (225),
+  **Automations**, **Understand**, Skills **ROI + Library**, a full **Leads**
+  pipeline, and **CLI-Anything** (any CLI you own becomes an agent, from
+  Settings).
+
+---
+
 ## Start here
 
 You need [Node.js](https://nodejs.org) 20 or newer. That is the only hard
